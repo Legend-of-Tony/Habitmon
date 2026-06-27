@@ -6,7 +6,7 @@ import { CameraController } from './util/CameraController'
 
 const CanvasInit = () => {
 
-{/*const {rotation, position, cameraPosition, fov} = useTransformControls()*/}
+{/*const {rotation, position, cameraPosition, fov, target} = useTransformControls()*/}
 
 
   return (

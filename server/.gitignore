@@ -1,0 +1,12 @@
+# Compiled Binaries
+bin/
+*.exe
+
+# Environment Variables
+.env
+.env.*
+.envrc
+
+# OS files
+.DS_Store
+Thumbs.db
