@@ -37,3 +37,8 @@ type CreateUserResponse struct {
 type UserHandler struct {
 	db *sql.DB
 }
+
+type LoginUserRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
