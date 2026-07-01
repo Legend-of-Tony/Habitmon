@@ -27,7 +27,7 @@ func VerifyToken(tokenString string) (int, error) {
 		return secretKey, nil
 	})
 	if err != nil || !token.Valid {
-		return 0, fmt.Errorf("Invalid token")
+		return 0, fmt.Errorf("invalid token")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)

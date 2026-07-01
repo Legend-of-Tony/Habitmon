@@ -42,3 +42,33 @@ type LoginUserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type LoginUserResponse struct {
+	Token string `json:"token"`
+}
+
+type UpdateUserRequest struct {
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
+	Email     *string `json:"email"`
+	Username  *string `json:"username"`
+	Password  *string `json:"password"`
+}
+
+type UpdateUserResponse struct {
+	ID        int    `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Username  string `json:"username"`
+	UpdatedAt string `json:"updated_at"`
+}
+
+type GetUserResponse struct {
+	ID        int    `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Username  string `json:"username"`
+	CreatedAt string `json:"created_at"`
+}
