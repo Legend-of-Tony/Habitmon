@@ -15,6 +15,6 @@ func Routes(db *sql.DB) http.Handler {
 	r.Post(Login, h.LoginUser)
 	r.With(middleware.AuthMiddleware).Patch("/", h.UpdateUser)
 	r.With(middleware.AuthMiddleware).Get("/", h.GetUser)
-	//r.Delete(ByID, h.DeleteUser)
+	r.With(middleware.AuthMiddleware).Delete("/", h.DeleteUser)
 	return r
 }

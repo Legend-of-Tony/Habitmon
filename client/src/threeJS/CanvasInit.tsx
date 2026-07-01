@@ -1,6 +1,9 @@
 import { Canvas} from '@react-three/fiber'
-import { Forest } from './meshes/Forest' 
-import { useTransformControls } from './util/useTrasnformControls'
+import { Forest } from './meshes/Forest'
+
+{/*
+    import {useTransformControls} from './util/useTrasnformControls'
+*/}
 import { CameraController } from './util/CameraController'
 
 
