@@ -13,7 +13,7 @@ const CanvasInit = () => {
 
 
   return (
-    <div id= 'canvas-container' className='w-screen h-screen'>
+    <div id= 'canvas-container' className='w-full h-screen'>
       <Canvas > 
         <CameraController position={[-0.8,2.3,3.5]} fov={50} target={[0,1.6,0]}/>
         <Forest rotation={[0,2.51,0]} position={[-2.5,0.09,0]}/>
