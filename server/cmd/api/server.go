@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/legend-of-tony/Habitmon/cmd/api/users"
 )
 
@@ -28,6 +29,12 @@ func NewServer(addr string, db *sql.DB) *Server {
 }
 
 func (s *Server) setupMiddleware() {
+	s.router.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
 	s.router.Use(middleware.Logger)
 	s.router.Use(middleware.Recoverer)
 }

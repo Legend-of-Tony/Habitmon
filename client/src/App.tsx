@@ -1,12 +1,11 @@
 
-import CanvasInit from './threeJS/CanvasInit'
-import Navbar from "./components/nav/Navbar.tsx";
-import Header from "./components/nav/Header.tsx";
+
 import {BrowserRouter, Route, Routes} from "react-router";
 import Layout from "./components/layouts/Layout.tsx";
 import Home from "./features/home/Home.tsx";
 import Account from "./features/account_page/Account.tsx";
 import Register from "./features/account_page/Register.tsx";
+import Login from "./features/account_page/Login.tsx";
 
 const App = () => {
   return (
@@ -16,6 +15,7 @@ const App = () => {
                 <Route path="/" element={<Home/>}/>
                 <Route path="/account" element={<Account/>}/>
                 <Route path="/register" element={<Register/>}/>
+                <Route path="/login" element={<Login/>}/>
             </Route>
         </Routes>
 

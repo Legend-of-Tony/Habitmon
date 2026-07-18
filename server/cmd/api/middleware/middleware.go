@@ -3,7 +3,6 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"strings"
 
 	"github.com/legend-of-tony/Habitmon/internal/auth"
 )
@@ -14,21 +13,12 @@ const userIDKey contextKey = "userID"
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "missing authorization header", http.StatusUnauthorized)
+		cookie, err := r.Cookie("token")
+		if err != nil {
+			http.Error(w, "missing authorization token", http.StatusUnauthorized)
 			return
 		}
-		if !strings.HasPrefix(authHeader, "Bearer ") {
-			http.Error(w, "invalid authorization header", http.StatusUnauthorized)
-			return
-		}
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		if tokenString == "" {
-			http.Error(w, "invalid authorization header", http.StatusUnauthorized)
-			return
-		}
-		userID, err := auth.VerifyToken(tokenString)
+		userID, err := auth.VerifyToken(cookie.Value)
 		if err != nil {
 			http.Error(w, "invalid authorization token", http.StatusUnauthorized)
 			return

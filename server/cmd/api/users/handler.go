@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/legend-of-tony/Habitmon/cmd/api/middleware"
 	"github.com/legend-of-tony/Habitmon/internal/auth"
@@ -119,12 +120,19 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    token,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		MaxAge:   int((24 * time.Hour).Seconds()),
+	})
+
 	helpers.WriteJson(w, http.StatusOK, ResponseStatus{
 		Status:  "Success",
 		Message: "Login successful",
-		Data: LoginUserResponse{
-			Token: token,
-		},
 	})
 
 }

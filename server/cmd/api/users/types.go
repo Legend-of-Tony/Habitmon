@@ -43,10 +43,6 @@ type LoginUserRequest struct {
 	Password string `json:"password"`
 }
 
-type LoginUserResponse struct {
-	Token string `json:"token"`
-}
-
 type UpdateUserRequest struct {
 	FirstName *string `json:"first_name"`
 	LastName  *string `json:"last_name"`
