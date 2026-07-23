@@ -6,20 +6,24 @@ import Home from "./features/home/Home.tsx";
 import Account from "./features/account_page/Account.tsx";
 import Register from "./features/account_page/Register.tsx";
 import Login from "./features/account_page/Login.tsx";
+import AuthProvider from "./context/AuthProvider.tsx";
 
 const App = () => {
   return (
-    <BrowserRouter>
-        <Routes>
-            <Route element={<Layout/>}>
-                <Route path="/" element={<Home/>}/>
-                <Route path="/account" element={<Account/>}/>
-                <Route path="/register" element={<Register/>}/>
-                <Route path="/login" element={<Login/>}/>
-            </Route>
-        </Routes>
+    <AuthProvider>
+      <BrowserRouter>
+          <Routes>
+              <Route element={<Layout/>}>
+                  <Route path="/" element={<Home/>}/>
+                  <Route path="/account" element={<Account/>}/>
+                  <Route path="/register" element={<Register/>}/>
+                  <Route path="/login" element={<Login/>}/>
+              </Route>
+          </Routes>
 
-    </BrowserRouter>
+      </BrowserRouter>
+    </AuthProvider>
+
   )
 }
 

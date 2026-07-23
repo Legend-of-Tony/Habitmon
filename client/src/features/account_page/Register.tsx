@@ -1,6 +1,6 @@
 import React,{useState} from 'react'
 import {API_URL} from '../../config'
-import { validateFormData } from '../../components/functions/FormDataValidation'
+import { validateRegisterFormData } from '../../components/functions/FormDataValidation'
 import { useNavigate } from 'react-router'
 
 const Register = () => {
@@ -16,7 +16,7 @@ const Register = () => {
     const handleSubmit = async (e:React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        const msg = validateFormData({firstName,lastName,email,username,password})
+        const msg = validateRegisterFormData({firstName,lastName,email,username,password})
         if (msg){
             setError(msg)
             return
