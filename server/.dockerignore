@@ -1,0 +1,15 @@
+tmp/
+.git/
+
+bin/
+*.exe
+
+.env
+.env.*
+.envrc
+
+.DS_Store
+Thumbs.db
+
+.gocache
+.idea
