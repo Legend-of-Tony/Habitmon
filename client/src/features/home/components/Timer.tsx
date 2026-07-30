@@ -3,8 +3,41 @@ import PlayButton from "../../../assets/play-1003-svgrepo-com.svg"
 import SkipForward from "../../../assets/skip-next-svgrepo-com.svg"
 import SkipBack from "../../../assets/skip-previous-svgrepo-com.svg"
 import {Link} from "react-router";
+import {useState,useEffect} from 'react'
 
 const Timer = () => {
+    type Mode = 'pomodoro' | 'shortBreak' |'longBreak'
+
+    const [mode, setMode] = useState<Mode>('pomodoro')
+    const [secondsLeft, setSecondsLeft] = useState(25 * 60)
+    const [isRunning, setIsrunning] = useState(false)
+    const [pomodoroCount, setPomodoroCount] = useState(0)
+    const [durations, setDurations] = useState<Record<Mode, number>>({
+        pomodoro: 25*60, shortBreak: 5*60, longBreak: 15*60,
+    })
+
+    useEffect(() => {
+        if (!isRunning) return
+        const id = setInterval(() => setSecondsLeft(s => s -1), 1000)
+        return () => clearInterval(id)
+    },[isRunning])
+
+    useEffect(()=>{
+        if (secondsLeft > 0) return
+        setIsrunning(false)
+
+        if (mode === 'pomodoro') {
+            const next = pomodoroCount + 1
+            setPomodoroCount(next)
+            const nextMode: Mode = next % 4 === 0 ? 'longBreak' : 'shortBreak'
+            setMode(nextMode)
+            setSecondsLeft(durations[nextMode])
+        } else {
+            if (mode === 'longBreak') setPomodoroCount(0)
+            setMode('pomodoro')
+            setSecondsLeft(durations.pomodoro)
+        }
+    }, [secondsLeft, mode, pomodoroCount, durations])
   return (
     <section className='flex flex-col gap-6 rounded-2xl bg-[#3999FF]/50 p-4'>
         <ul className='flex text-xs gap-4 justify-between'>
