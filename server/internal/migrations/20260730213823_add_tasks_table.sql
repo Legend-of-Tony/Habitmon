@@ -1,0 +1,15 @@
+-- +goose Up
+CREATE TABLE IF NOT EXISTS tasks(
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    completed BOOLEAN DEFAULT FALSE NOT NULL,
+    progress INT NOT NULL DEFAULT 0,
+    sessions INT NOT NULL,
+    due_date DATE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+-- +goose Down
+DROP TABLE IF EXISTS tasks;
