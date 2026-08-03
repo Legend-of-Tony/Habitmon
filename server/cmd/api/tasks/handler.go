@@ -72,4 +72,26 @@ func (h *TaskHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	result, err := h.db.ExecContext(r.Context(), `DELETE FROM tasks WHERE user_id=$1`, userID)
+	if err != nil {
+		http.Error(w, "failed to delete task", http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		http.Error(w, "failed to delete task", http.StatusInternalServerError)
+		return
+	}
+
+	if rowsAffected == 0 {
+		http.Error(w, "task not found", http.StatusNotFound)
+		return
+	}
+
+	helpers.WriteJson(w, http.StatusOK, ResponseStatus{
+		Status:  "Success",
+		Message: "Task deleted successfully",
+	})
+
 }
