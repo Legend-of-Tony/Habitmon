@@ -1,9 +1,13 @@
 package tasks
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/legend-of-tony/Habitmon/cmd/api/middleware"
 	"github.com/legend-of-tony/Habitmon/internal/helpers"
 )
@@ -41,16 +45,14 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 
 	var res CreateTaskRequest
 	err = h.db.QueryRowContext(r.Context(),
-		`INSERT INTO tasks (user_id, title, sessions, due_date)
-		VALUES ($1,$2,$3,$4)
-		RETURNING title, sessions, due_date`,
+		`INSERT INTO tasks (user_id, title, sessions)
+		VALUES ($1,$2,$3)
+		RETURNING title, sessions`,
 		userID,
 		req.Title,
-		req.Sessions,
-		req.DueDate).Scan(
+		req.Sessions).Scan(
 		&res.Title,
-		&res.Sessions,
-		&res.DueDate)
+		&res.Sessions)
 	if err != nil {
 		http.Error(w, "failed to create task", http.StatusInternalServerError)
 		return
@@ -72,7 +74,13 @@ func (h *TaskHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.db.ExecContext(r.Context(), `DELETE FROM tasks WHERE user_id=$1`, userID)
+	taskID, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil || taskID <= 0 {
+		http.Error(w, "invalid task ID", http.StatusBadRequest)
+		return
+	}
+
+	result, err := h.db.ExecContext(r.Context(), `DELETE FROM tasks WHERE user_id=$1 and id = $2`, userID, taskID)
 	if err != nil {
 		http.Error(w, "failed to delete task", http.StatusInternalServerError)
 		return
@@ -92,6 +100,165 @@ func (h *TaskHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	helpers.WriteJson(w, http.StatusOK, ResponseStatus{
 		Status:  "Success",
 		Message: "Task deleted successfully",
+	})
+
+}
+
+func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
+	defer helpers.BodyClose(r)
+
+	userID, ok := middleware.GetUserID(r)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	taskID, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil || taskID <= 0 {
+		http.Error(w, "invalid task ID", http.StatusBadRequest)
+		return
+	}
+
+	var req UpdateTaskRequest
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	if req.Title == nil &&
+		req.Sessions == nil {
+		http.Error(w, "no fields provided", http.StatusBadRequest)
+		return
+	}
+
+	var res UpdateTaskResponse
+	err = h.db.QueryRowContext(r.Context(),
+		`UPDATE tasks SET
+	title = COALESCE($1, title),
+	sessions = COALESCE($2, sessions),
+	updated_at = NOW()
+	WHERE id = $3
+	AND user_id = $4
+	RETURNING title, sessions, updated_at`,
+		req.Title,
+		req.Sessions,
+		taskID,
+		userID).Scan(
+		&res.Title,
+		&res.Sessions,
+		&res.UpdatedAt)
+	if err != nil {
+		http.Error(w, "failed to update task", http.StatusInternalServerError)
+		return
+	}
+
+	helpers.WriteJson(w, http.StatusOK, ResponseStatus{
+		Status:  "Success",
+		Message: "Task updated successfully",
+		Data:    res,
+	})
+}
+
+func (h *TaskHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserID(r)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var res GetTasks
+	rows, err := h.db.QueryContext(r.Context(),
+		`SELECT 
+		id,
+		title,
+		completed,
+		progress,
+		sessions,
+		updated_at,
+		created_at
+		FROM tasks WHERE user_id = $1
+		ORDER BY created_at DESC`,
+		userID)
+
+	if err != nil {
+		http.Error(w, "failed to get tasks", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	tasks := make([]GetTasks, 0)
+
+	for rows.Next() {
+		var task GetTasks
+
+		err := rows.Scan(
+			&task.ID,
+			&task.Title,
+			&task.Completed,
+			&task.Sessions,
+			&task.CreatedAt,
+			&task.UpdatedAt,
+		)
+		if err != nil {
+			http.Error(w, "failed to read task", http.StatusInternalServerError)
+			return
+		}
+		tasks = append(tasks, task)
+	}
+
+	helpers.WriteJson(w, http.StatusOK, ResponseStatus{
+		Status:  "Success",
+		Message: "Tasks retrieved successfully",
+		Data:    res,
+	})
+}
+
+func (h *TaskHandler) GetTaskByID(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserID(r)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	taskID, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil || taskID <= 0 {
+		http.Error(w, "invalid task ID", http.StatusBadRequest)
+		return
+	}
+
+	var res GetTasks
+	err = h.db.QueryRowContext(r.Context(),
+		`SELECT id,
+		title,
+		completed,
+		sessions,
+		progress,
+		created_at,
+		updated_at
+		FROM tasks WHERE id = $1 AND user_id = $2`, taskID, userID).Scan(
+		&res.ID,
+		&res.Title,
+		&res.Completed,
+		&res.Sessions,
+		&res.Progress,
+		&res.CreatedAt,
+		&res.UpdatedAt,
+	)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, "task not found", http.StatusInternalServerError)
+		return
+	}
+	if err != nil {
+		http.Error(w, "failed to get task", http.StatusBadRequest)
+		return
+	}
+
+	helpers.WriteJson(w, http.StatusOK, ResponseStatus{
+		Status:  "Success",
+		Message: "Retrieved task successfully",
+		Data:    res,
 	})
 
 }

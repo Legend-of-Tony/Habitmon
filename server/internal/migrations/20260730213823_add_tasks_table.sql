@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS tasks(
     completed BOOLEAN DEFAULT FALSE NOT NULL,
     progress INT NOT NULL DEFAULT 0,
     sessions INT NOT NULL,
-    due_date DATE NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );

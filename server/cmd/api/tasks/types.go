@@ -14,7 +14,7 @@ type Tasks struct {
 	Title     string `json:"title"`
 	Completed bool   `json:"completed"`
 	Sessions  int    `json:"sessions"`
-	DueDate   string `json:"due_date"`
+	Progress  int    `json:"progress"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 }
@@ -26,5 +26,26 @@ type TaskHandler struct {
 type CreateTaskRequest struct {
 	Title    string `json:"title"`
 	Sessions int    `json:"sessions"`
-	DueDate  string `json:"due_date"`
+}
+
+type UpdateTaskRequest struct {
+	ID       *int    `json:"id"`
+	Title    *string `json:"title"`
+	Sessions *int    `json:"sessions"`
+}
+
+type UpdateTaskResponse struct {
+	Title     string `json:"title"`
+	Sessions  int    `json:"sessions"`
+	UpdatedAt string `json:"updated_at"`
+}
+
+type GetTasks struct {
+	ID        int    `json:"id"`
+	Title     string `json:"title"`
+	Completed bool   `json:"completed"`
+	Sessions  int    `json:"sessions"`
+	Progress  int    `json:"progress"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }

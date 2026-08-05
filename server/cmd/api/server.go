@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/legend-of-tony/Habitmon/cmd/api/tasks"
 	"github.com/legend-of-tony/Habitmon/cmd/api/users"
 )
 
@@ -41,6 +42,7 @@ func (s *Server) setupMiddleware() {
 
 func (s *Server) setupRoutes() {
 	s.router.Mount(users.BasePath, users.Routes(s.db))
+	s.router.Mount(tasks.BasePath, tasks.Routes(s.db))
 }
 
 func (s *Server) Start() error {
