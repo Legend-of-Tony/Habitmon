@@ -1,7 +1,8 @@
 import { useState } from "react"
-import { useNavigate } from "react-router"
+import { useNavigate, Link } from "react-router"
 import { validateLoginFormData } from "../../components/functions/FormDataValidation"
 import { API_URL } from "../../config"
+import { useAuth } from "../../context/useAuth"
 
 const Login = () => {
 
@@ -9,6 +10,8 @@ const Login = () => {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
+    const { refreshAuth} = useAuth()
+    
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -32,9 +35,13 @@ const Login = () => {
             return
         }
         
-        const data = await response.json()
-        console.log('logged in', data)  
-        navigate('/account')
+        if (!response.ok) {
+            const msg = await response.text()
+            setError(msg)
+            return
+        }
+        await refreshAuth()
+        navigate('/')
     }
   return (
     <div className='w-full h-screen flex justify-center items-center'>
@@ -50,6 +57,7 @@ const Login = () => {
                     <input type="password" placeholder="password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 </label>
                 {error && <p className="text-red-500">{error}</p>}
+                <p><Link to="/register">Register</Link> new account</p>
                 <button type="submit">Login</button>
             </form>
         </div>

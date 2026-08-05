@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/legend-of-tony/Habitmon/cmd/api/middleware"
@@ -58,7 +59,7 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helpers.WriteJson(w, http.StatusOK, ResponseStatus{
+	helpers.WriteJson(w, http.StatusCreated, ResponseStatus{
 		Status:  "Success",
 		Message: "Task created successfully",
 		Data:    res,
@@ -127,8 +128,25 @@ func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.Title == nil &&
-		req.Sessions == nil {
+		req.Completed == nil &&
+		req.Sessions == nil &&
+		req.Progress == nil {
 		http.Error(w, "no fields provided", http.StatusBadRequest)
+		return
+	}
+
+	if req.Title != nil && strings.TrimSpace(*req.Title) == "" {
+		http.Error(w, "title cannot be blank", http.StatusBadRequest)
+		return
+	}
+
+	if req.Sessions != nil && *req.Sessions < 0 {
+		http.Error(w, "sessions cannot be less than zero", http.StatusBadRequest)
+		return
+	}
+
+	if req.Progress != nil && *req.Progress < 0 {
+		http.Error(w, "progress cannot be less than zero", http.StatusBadRequest)
 		return
 	}
 
@@ -136,18 +154,28 @@ func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	err = h.db.QueryRowContext(r.Context(),
 		`UPDATE tasks SET
 	title = COALESCE($1, title),
-	sessions = COALESCE($2, sessions),
+	completed = COALESCE($2, completed),
+	sessions = COALESCE($3, sessions),
+	progress = COALESCE($4, progress),
 	updated_at = NOW()
-	WHERE id = $3
-	AND user_id = $4
-	RETURNING title, sessions, updated_at`,
+	WHERE id = $5
+	AND user_id = $6
+	RETURNING title, completed, sessions, progress, updated_at`,
 		req.Title,
+		req.Completed,
 		req.Sessions,
+		req.Progress,
 		taskID,
 		userID).Scan(
 		&res.Title,
+		&res.Completed,
 		&res.Sessions,
+		&res.Progress,
 		&res.UpdatedAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, "task not found", http.StatusNotFound)
+		return
+	}
 	if err != nil {
 		http.Error(w, "failed to update task", http.StatusInternalServerError)
 		return
@@ -167,7 +195,6 @@ func (h *TaskHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var res GetTasks
 	rows, err := h.db.QueryContext(r.Context(),
 		`SELECT 
 		id,
@@ -196,9 +223,10 @@ func (h *TaskHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
 			&task.ID,
 			&task.Title,
 			&task.Completed,
+			&task.Progress,
 			&task.Sessions,
-			&task.CreatedAt,
 			&task.UpdatedAt,
+			&task.CreatedAt,
 		)
 		if err != nil {
 			http.Error(w, "failed to read task", http.StatusInternalServerError)
@@ -207,10 +235,15 @@ func (h *TaskHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
 		tasks = append(tasks, task)
 	}
 
+	if err = rows.Err(); err != nil {
+		http.Error(w, "failed while reading tasks", http.StatusInternalServerError)
+		return
+	}
+
 	helpers.WriteJson(w, http.StatusOK, ResponseStatus{
 		Status:  "Success",
 		Message: "Tasks retrieved successfully",
-		Data:    res,
+		Data:    tasks,
 	})
 }
 
@@ -247,11 +280,11 @@ func (h *TaskHandler) GetTaskByID(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		http.Error(w, "task not found", http.StatusInternalServerError)
+		http.Error(w, "task not found", http.StatusNotFound)
 		return
 	}
 	if err != nil {
-		http.Error(w, "failed to get task", http.StatusBadRequest)
+		http.Error(w, "failed to get task", http.StatusInternalServerError)
 		return
 	}
 
