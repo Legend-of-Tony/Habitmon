@@ -1,9 +1,63 @@
-import React from 'react'
+import {useState, useCallback} from 'react'
 import CanvasInit from "../../threeJS/CanvasInit.tsx";
 import TaskList from "./components/TaskList.tsx"
 import Timer from "./components/Timer.tsx"
+import type { Task } from './types/taskTypes.ts';
+
+import { API_URL } from '../../config.ts';
+
+type ApiResponse<T> = {
+    status: string
+    message?: string
+    data: T
+}
+
+type UpdatedTask = {
+    title: string
+    completed: boolean
+    sessions: number
+    progress: number
+    updated_at: string
+}
 
 const Home = () => {
+
+    const [tasks, setTasks] = useState<Task[]>([]) 
+
+    const activeTask = tasks[0] ?? null
+
+    const recordPomodoro = useCallback(async (task: Task) => {
+        if (task.progress >= task.sessions) {
+            return
+        }
+
+        const nextProgress = task.progress + 1
+        const completed = nextProgress >= task.sessions
+
+        const response = await fetch(`${API_URL}/tasks/${task.id}`,
+            {
+                method:"PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    progress: nextProgress, completed,
+                }),
+            },
+        )
+
+        if (!response.ok) {
+            const message = await response.text()
+            throw new Error(message || "Failed to update task progress",)
+        }
+
+        const result: ApiResponse<UpdatedTask> = await response.json()
+        setTasks((currentTasks) => currentTasks.map((currentTask) =>
+            currentTask.id === task.id ? {...currentTask, ...result.data,} : currentTask,
+            ),
+        )
+    },[])
     return (
         <div className="grid grid-cols-12 grid-rows-12 w-full h-full">
 
@@ -12,49 +66,10 @@ const Home = () => {
             </section>
 
             <section className='col-start-1 col-span-3 row-start-3 row-span-5 flex flex-col gap-4'>
-                <Timer/>
-                <TaskList/>
+                <Timer task={activeTask} onPomodoroComplete={recordPomodoro} key={activeTask?.id ?? "no-task"}/>
+                <TaskList tasks={tasks} setTasks={setTasks}/>
             </section>
 
-            {/*<section className='col-start-1 col-span-3 row-start-3 row-span-5 rounded-2xl bg-[#3999FF]/50 p-4 flex flex-col justify-between'>
-                <ul className='flex text-xs gap-4 justify-between'>
-                    <li>
-                        POMODORO
-                    </li>
-                    <li>
-                        SHORT BREAK
-                    </li>
-                    <li>
-                        LONG BREAK
-                    </li>
-                </ul>
-                <h1 className='flex justify-center text-8xl'>25:00</h1>
-                <button className='flex justify-center text-7xl bg-amber-50 p-4 rounded-3xl items-center'>START</button>
-            </section>
-            */}
-{/* 
-            <section className='col-start-1 col-span-3 row-start-9 row-span-2 rounded-2xl bg-[#3999FF]/50 flex flex-col'>
-                <div className='flex justify-between p-4 gap-6'>
-                    <h2>TASKS</h2>
-                    <img src={OptionsMenu} alt="Options Menu" className='w-4 h-4'></img>
-                </div>
-                <hr className='border-3 w-5/6 rounded-xl border-amber-50 mx-auto'/>
-                <ul className='p-4 flex flex-col gap-2'>
-                    <li className='flex justify-between items-center bg-amber-50 rounded-2xl p-2'>
-                        <img src={BurgerMenu} alt="menu" className='w-4 h-4'></img>
-                        <h3>Task</h3>
-                        <h3>1/4</h3>
-                        <img src={OptionsMenu} alt="Options Menu" className='w-4 h-4'></img>
-                    </li>
-                    <li className='flex justify-center items-center gap-4 bg-amber-50/30 p-2 rounded-2xl'>
-                        <img src={PlusIcon} alt="plus" className='w-4 h-4'></img>
-                        <h3>
-                            ADD NEW TASK
-                        </h3>
-                    </li>
-                </ul>
-            </section>
-*/}
         </div>
     )
 }

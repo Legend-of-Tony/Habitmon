@@ -4,8 +4,15 @@ import SkipForward from "../../../assets/skip-next-svgrepo-com.svg"
 import SkipBack from "../../../assets/skip-previous-svgrepo-com.svg"
 import {Link} from "react-router";
 import {useState,useEffect} from 'react'
+import type { Task } from "../types/taskTypes";
 
-const Timer = () => {
+type TimerProps = {
+    task: Task | null
+    onPomodoroComplete: (task: Task) => Promise<void>
+    
+}
+
+const Timer = ({task, onPomodoroComplete}: TimerProps) => {
     type Mode = 'pomodoro' | 'shortBreak' |'longBreak'
 
     const [mode, setMode] = useState<Mode>('pomodoro')
@@ -15,6 +22,8 @@ const Timer = () => {
     const [durations, setDurations] = useState<Record<Mode, number>>({
         pomodoro: 25*60, shortBreak: 5*60, longBreak: 15*60,
     })
+
+    const [progressError, setProgressError] = useState("")
 
     useEffect(() => {
         if (!isRunning) return
@@ -27,6 +36,14 @@ const Timer = () => {
         setIsrunning(false)
 
         if (mode === 'pomodoro') {
+            if (task) {
+                void onPomodoroComplete(task).then(() => {
+                    setProgressError("")
+                }).catch((error: unknown) => {
+                    const message = error instanceof Error ? error.message : "Failed to record pomodoro"
+                    setProgressError(message)
+                })
+            }
             const next = pomodoroCount + 1
             setPomodoroCount(next)
             const nextMode: Mode = next % 4 === 0 ? 'longBreak' : 'shortBreak'
@@ -37,7 +54,7 @@ const Timer = () => {
             setMode('pomodoro')
             setSecondsLeft(durations.pomodoro)
         }
-    }, [secondsLeft, mode, pomodoroCount, durations])
+    }, [secondsLeft, mode, pomodoroCount, durations, task, onPomodoroComplete])
 
     const formatTime = (totalSeconds: number) => {
             let minutes = Math.floor(totalSeconds / 60)
@@ -59,9 +76,14 @@ const Timer = () => {
         </ul>
         <h1 className='flex justify-center text-8xl'>{formatTime(secondsLeft)}</h1>
         <div className="flex  justify-between items-center p-2 ">
-            <h3 className="text-3xl">Sessions</h3>
-            <h2 className="text-3xl">{pomodoroCount}/4</h2>
+            <h3 className="text-3xl">{task ? task.title : "No active task"}</h3>
+            <h2 className="text-3xl">{task ? `${task.progress}/${task.sessions}` : "0/0"}</h2>
         </div>
+        {progressError && (
+            <p className="text-red-600">
+                {progressError}
+            </p>
+        )}
         <button onClick={() => setIsrunning(prev => !prev)} className='flex-1 justify-center text-4xl bg-amber-50 p-2 rounded-2xl items-center shadow-lg h-full w-full'>
             {isRunning ? "PAUSE" : "START"}
         </button>

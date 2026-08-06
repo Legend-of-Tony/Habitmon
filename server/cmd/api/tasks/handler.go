@@ -204,8 +204,7 @@ func (h *TaskHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
 		sessions,
 		updated_at,
 		created_at
-		FROM tasks WHERE user_id = $1
-		ORDER BY created_at DESC`,
+		FROM tasks WHERE user_id = $1`,
 		userID)
 
 	if err != nil {
