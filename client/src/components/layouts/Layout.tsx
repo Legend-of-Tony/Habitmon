@@ -6,11 +6,11 @@ import {Outlet} from "react-router";
 
 const Layout = () => {
     return (
-        <div className="flex flex-col w-full h-screen px-10 py-8 bg-[#6FB4FD]">
-            <div className="flex w-auto h-auto">
+        <div className="flex h-screen w-full flex-col overflow-hidden bg-[#6FB4FD] px-10 py-8">
+            <div className="flex shrink-0">
                 <Navbar/>
             </div>
-            <div className="flex w-auto h-full">
+            <div className="flex min-h-0 flex-1">
                 <Outlet/>
             </div>
         </div>

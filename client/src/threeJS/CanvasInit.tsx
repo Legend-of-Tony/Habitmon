@@ -1,25 +1,24 @@
 import { Canvas} from '@react-three/fiber'
-import { Forest } from './meshes/Forest'
+import {Baby} from './meshes/Baby'
+import {Room} from './meshes/RoomGenerated'
 
 {/*
     import {useTransformControls} from './util/useTrasnformControls'
 */}
-import { CameraController } from './util/CameraController'
-
-
 const CanvasInit = () => {
 
 {/*const {rotation, position, cameraPosition, fov, target} = useTransformControls()*/}
 
 
   return (
-    <div id= 'canvas-container' className='w-full h-full' >
+    <div id='canvas-container' className='h-full min-h-0 w-full overflow-hidden'>
       <Canvas > 
-        <CameraController position={[-0.8,2.3,3.5]} fov={50} target={[0,1.6,0]}/>
-        <Forest rotation={[0,2.51,0]} position={[-2.5,0.09,0]}/>
+        
+        <Room/>
+        <Baby/>
         
         
-        <ambientLight intensity={0.1} />
+        <ambientLight intensity={0.8} />
         <directionalLight position={[0, 0, 5]} />
       </Canvas>
     </div>

@@ -59,9 +59,9 @@ const Home = () => {
         )
     },[])
     return (
-        <div className="grid grid-cols-12 grid-rows-12 w-full h-full">
+        <div className="grid h-full min-h-0 w-full grid-cols-12 grid-rows-12">
 
-            <section className='col-start-5 col-span-8 row-start-2 row-span-full rounded-2xl overflow-hidden inset-shadow-sm'>
+            <section className='col-start-5 col-span-8 row-start-2 row-span-full min-h-0 rounded-2xl overflow-hidden inset-shadow-sm'>
                 <CanvasInit/>
             </section>
 
