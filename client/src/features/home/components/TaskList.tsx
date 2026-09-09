@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState} from 'react'
 import type {FormEvent, Dispatch, DragEvent, SetStateAction} from "react"
 import { API_URL } from "../../../config"
 import type {Task} from "../types/taskTypes"
+import { fetchWithTransientRetry } from "../../../api/fetchWithTransientRetry"
 
 
 type ApiResponse<T> = {
@@ -37,7 +38,7 @@ const TaskList = ( {tasks, setTasks}: TaskListProps) => {
         setError("")
 
         try {
-            const response = await fetch(`${API_URL}/tasks/`, {
+            const response = await fetchWithTransientRetry(`${API_URL}/tasks/`, {
                 method: "GET",
                 credentials: "include",
             })

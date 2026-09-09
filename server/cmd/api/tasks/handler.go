@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -208,6 +209,7 @@ func (h *TaskHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
 		userID)
 
 	if err != nil {
+		log.Printf("get tasks for user %d: %v", userID, err)
 		http.Error(w, "failed to get tasks", http.StatusInternalServerError)
 		return
 	}

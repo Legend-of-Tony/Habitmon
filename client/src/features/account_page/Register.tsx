@@ -1,7 +1,9 @@
-import React,{useState} from 'react'
+import {useState} from 'react'
+import type { FormEvent } from 'react'
 import {API_URL} from '../../config'
 import { validateRegisterFormData } from '../../components/functions/FormDataValidation'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
+import AccountShell, { accountButtonClass, accountInputClass } from './components/AccountShell'
 
 const Register = () => {
 
@@ -12,8 +14,9 @@ const Register = () => {
     const [username,setUsername] = useState('')
     const [password,setPassword]= useState('')
     const [error,setError] = useState('')
+    const [submitting,setSubmitting] = useState(false)
 
-    const handleSubmit = async (e:React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e:FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
         const msg = validateRegisterFormData({firstName,lastName,email,username,password})
@@ -22,55 +25,62 @@ const Register = () => {
             return
         }
 
-        const response = await fetch(`${API_URL}/users/register`, {
-            method: 'POST',
-            headers: { 'Content-Type':'application/json' },
-            body: JSON.stringify({first_name:firstName,last_name:lastName,email,username,password}),
-        })
+        setSubmitting(true)
+        setError('')
+        try {
+            const response = await fetch(`${API_URL}/users/register`, {
+                method: 'POST',
+                headers: { 'Content-Type':'application/json' },
+                body: JSON.stringify({first_name:firstName,last_name:lastName,email,username,password}),
+            })
 
-        if(!response.ok){
-            const msg = await response.text()
-            setError(msg)
-            return
+            if(!response.ok){
+                const msg = await response.text()
+                setError(msg || 'Unable to create account')
+                return
+            }
+            navigate('/login')
+        } catch {
+            setError('Unable to reach the server. Please try again.')
+        } finally {
+            setSubmitting(false)
         }
-
-        const data = await response.json()
-        console.log('registered',data)
-        navigate('/login')
     }
 
 
 
     return (
-        <div className='w-full h-screen flex justify-center items-center'>
-            <div className='bg-amber-50 flex flex-col justify-center items-center w-2/3 h-2/3'>
-                <h1>Register</h1>
-                <form className='flex flex-col' onSubmit={handleSubmit}>
-                    <label>
-                        First Name:
-                        <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)}placeholder="First Name"/>
+        <AccountShell
+            eyebrow="Meet your Habitmon"
+            title="Create your account"
+            description="Start a focus routine and receive a one-of-a-kind companion generated just for you."
+            footer={<>Already have an account? <Link className="font-black text-blue-600 hover:underline" to="/login">Log in</Link></>}
+        >
+                <form className="grid grid-cols-1 gap-5 sm:grid-cols-2" onSubmit={handleSubmit}>
+                    <label className="text-sm font-bold text-slate-800">
+                        First name
+                        <input className={accountInputClass} autoComplete="given-name" type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Avery"/>
                     </label>
-                    <label>
-                        Last Name:
-                        <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}placeholder="Last Name"/>
+                    <label className="text-sm font-bold text-slate-800">
+                        Last name
+                        <input className={accountInputClass} autoComplete="family-name" type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Morgan"/>
                     </label>
-                    <label>
-                        Email:
-                        <input type="text" value={email} onChange={(e) => setEmail(e.target.value)}placeholder="Email"/>
+                    <label className="text-sm font-bold text-slate-800 sm:col-span-2">
+                        Email
+                        <input className={accountInputClass} autoComplete="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com"/>
                     </label>
-                    <label>
-                        Username:
-                        <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
+                    <label className="text-sm font-bold text-slate-800 sm:col-span-2">
+                        Username
+                        <input className={accountInputClass} autoComplete="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="focus_friend" />
                     </label>
-                    <label>
-                        Password:
-                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
+                    <label className="text-sm font-bold text-slate-800 sm:col-span-2">
+                        Password
+                        <input className={accountInputClass} autoComplete="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" />
                     </label>
-                    {error && <p className="text-red-500">{error}</p>}
-                    <button type="submit">Register</button>
+                    {error && <p role="alert" className="rounded-xl bg-red-100 px-4 py-3 text-sm font-semibold text-red-700 sm:col-span-2">{error}</p>}
+                    <button className={`${accountButtonClass} sm:col-span-2`} type="submit" disabled={submitting}>{submitting ? 'Creating account…' : 'Create account'}</button>
                 </form>
-            </div>
-        </div>
+        </AccountShell>
     )
 }
 export default Register

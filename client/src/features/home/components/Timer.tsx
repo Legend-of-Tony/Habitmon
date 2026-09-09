@@ -1,8 +1,3 @@
-import PauseButton from "../../../assets/pause-fill-svgrepo-com.svg"
-import PlayButton from "../../../assets/play-1003-svgrepo-com.svg"
-import SkipForward from "../../../assets/skip-next-svgrepo-com.svg"
-import SkipBack from "../../../assets/skip-previous-svgrepo-com.svg"
-import {Link} from "react-router";
 import {useState,useEffect} from 'react'
 import type { Task } from "../types/taskTypes";
 
@@ -19,7 +14,7 @@ const Timer = ({task, onPomodoroComplete}: TimerProps) => {
     const [secondsLeft, setSecondsLeft] = useState(25 * 60)
     const [isRunning, setIsrunning] = useState(false)
     const [pomodoroCount, setPomodoroCount] = useState(0)
-    const [durations, setDurations] = useState<Record<Mode, number>>({
+    const [durations] = useState<Record<Mode, number>>({
         pomodoro: 25*60, shortBreak: 5*60, longBreak: 15*60,
     })
 

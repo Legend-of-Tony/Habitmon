@@ -1,14 +1,17 @@
 package users
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/legend-of-tony/Habitmon/cmd/api/middleware"
 	"github.com/legend-of-tony/Habitmon/internal/auth"
+	"github.com/legend-of-tony/Habitmon/internal/creatures"
 	"github.com/legend-of-tony/Habitmon/internal/hash"
 	"github.com/legend-of-tony/Habitmon/internal/helpers"
 	"github.com/lib/pq"
@@ -56,15 +59,23 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var res CreateUserResponse
-	err = h.db.QueryRowContext(r.Context(),
+	tx, err := h.db.BeginTx(r.Context(), &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if err != nil {
+		http.Error(w, "failed to create user", http.StatusInternalServerError)
+		return
+	}
+	defer tx.Rollback()
+	var userID int
+	err = tx.QueryRowContext(r.Context(),
 		`INSERT INTO users (first_name, last_name, email, username, password_hash) 
 				VALUES ($1, $2, $3, $4, $5)
-				RETURNING first_name, last_name, email, username`,
+				RETURNING id, first_name, last_name, email, username`,
 		req.FirstName,
 		req.LastName,
 		req.Email,
 		req.Username,
 		passwordHash).Scan(
+		&userID,
 		&res.FirstName,
 		&res.LastName,
 		&res.Email,
@@ -75,6 +86,16 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "email or username already exists", http.StatusConflict)
 			return
 		}
+		http.Error(w, "failed to create user", http.StatusInternalServerError)
+		return
+	}
+
+	res.Creature, err = creatures.EnsureTx(r.Context(), tx, userID)
+	if err != nil {
+		http.Error(w, "failed to create starter creature", http.StatusInternalServerError)
+		return
+	}
+	if err = tx.Commit(); err != nil {
 		http.Error(w, "failed to create user", http.StatusInternalServerError)
 		return
 	}
@@ -244,6 +265,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		&res.Username,
 		&res.CreatedAt)
 	if err != nil {
+		log.Printf("get user %d: %v", userID, err)
 		http.Error(w, "failed to get user", http.StatusInternalServerError)
 		return
 	}

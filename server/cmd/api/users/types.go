@@ -1,6 +1,7 @@
 package users
 
 import "database/sql"
+import "github.com/legend-of-tony/Habitmon/internal/creatures"
 
 type ResponseStatus struct {
 	Status  string `json:"status"`
@@ -28,10 +29,11 @@ type CreateUserRequest struct {
 }
 
 type CreateUserResponse struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Username  string `json:"username"`
+	Creature  creatures.Creature `json:"creature"`
+	FirstName string             `json:"first_name"`
+	LastName  string             `json:"last_name"`
+	Email     string             `json:"email"`
+	Username  string             `json:"username"`
 }
 
 type UserHandler struct {
