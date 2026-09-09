@@ -59,13 +59,13 @@ const Home = () => {
         )
     },[])
     return (
-        <div className="grid h-full min-h-0 w-full grid-cols-12 grid-rows-12">
+        <div className="flex w-full flex-col gap-5 pb-8 pt-5 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-12 lg:grid-rows-12 lg:gap-4 lg:pb-0 lg:pt-0">
 
-            <section className='col-start-5 col-span-8 row-start-2 row-span-full min-h-0 rounded-2xl overflow-hidden inset-shadow-sm'>
+            <section aria-label="Your Habitmon" className="h-[42svh] min-h-72 w-full overflow-hidden rounded-3xl border-2 border-slate-900 bg-blue-300/30 shadow-[5px_5px_0_#0f172a] lg:col-start-5 lg:col-span-8 lg:row-start-2 lg:row-span-11 lg:h-auto lg:min-h-0">
                 <CanvasInit/>
             </section>
 
-            <section className='col-start-1 col-span-3 row-start-3 row-span-5 flex flex-col gap-4'>
+            <section aria-label="Focus controls" className="flex min-w-0 flex-col gap-5 lg:col-start-1 lg:col-span-3 lg:row-start-2 lg:row-span-11 lg:min-h-0 lg:overflow-y-auto lg:pr-1">
                 <Timer task={activeTask} onPomodoroComplete={recordPomodoro} key={activeTask?.id ?? "no-task"}/>
                 <TaskList tasks={tasks} setTasks={setTasks}/>
             </section>

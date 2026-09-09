@@ -149,13 +149,13 @@ const TaskList = ( {tasks, setTasks}: TaskListProps) => {
         setDraggedTaskId(null)
     }
   return (
-    <section className=' rounded-2xl bg-[#3999FF]/50 flex flex-col'>
-        <div className='flex justify-between p-4 gap-6'>
-            <h2>TASKS</h2>
+    <section className="flex min-w-0 flex-col rounded-3xl border-2 border-slate-900 bg-[#3999FF]/55 shadow-[5px_5px_0_#0f172a]">
+        <div className="flex items-center justify-between gap-6 p-4">
+            <h2 className="font-black tracking-wide text-slate-900">TASKS</h2>
             <img src={OptionsMenu} alt="Options Menu" className='w-4 h-4'></img>
         </div>
         <hr className='border-3 w-5/6 rounded-xl border-amber-50 mx-auto'/>
-        <ul className='p-4 flex flex-col gap-2'>
+        <ul className="flex min-w-0 flex-col gap-2 p-4">
             {loading && <li>Loading tasks...</li>}
 
                 {!loading && tasks.length === 0 && (
@@ -163,7 +163,7 @@ const TaskList = ( {tasks, setTasks}: TaskListProps) => {
             )}
 
             {tasks.map((task) => (
-                <li key={task.id} className={`flex justify-between items-center bg-amber-50 rounded-2xl p-2 shadow-lg ${
+                <li key={task.id} className={`flex min-w-0 items-center justify-between gap-2 rounded-2xl border-2 border-slate-900/10 bg-amber-50 p-2 shadow-sm ${
                 draggedTaskId === task.id ? "opacity-50" : ""}`} 
                     onDragOver={(event) => event.preventDefault()} onDrop={() => handleDrop(task.id)}>
 
@@ -179,10 +179,10 @@ const TaskList = ( {tasks, setTasks}: TaskListProps) => {
                             <img src={BurgerMenu} alt="" className="w-4 h-4" draggable={false}/>
                     </button>
 
-                    <span >
+                    <span className="min-w-0 flex-1 truncate font-semibold">
                         {task.title}
                     </span>
-                    <span>
+                    <span className="shrink-0 text-sm font-bold">
                         {task.progress}/{task.sessions}
                     </span>
                     <img src={OptionsMenu} alt="Task options" className="w-4 h-4"/>
@@ -196,22 +196,22 @@ const TaskList = ( {tasks, setTasks}: TaskListProps) => {
             </li> */} 
             {showForm && (
                 <li className="bg-amber-50 rounded-2xl p-3 shadow-lg">
-                    <form onSubmit={handleCreateTask} className="flex flex-col gap-2">
-                        <label>
+                    <form onSubmit={handleCreateTask} className="flex flex-col gap-3">
+                        <label className="text-sm font-bold">
                             Task Title
-                            <input type="text" value={title} onChange={(event) => { setTitle(event.target.value)}} required/>
+                            <input className="mt-1 w-full rounded-xl border-2 border-slate-900 px-3 py-2 outline-none focus:shadow-[2px_2px_0_#0f172a]" type="text" value={title} onChange={(event) => { setTitle(event.target.value)}} required/>
                         </label>
 
-                        <label> 
+                        <label className="text-sm font-bold">
                             Sessions
-                            <input type="number" min={0} value={sessions} onChange={(event) => { setSessions(Number(event.target.value))}} required/>
+                            <input className="mt-1 w-full rounded-xl border-2 border-slate-900 px-3 py-2 outline-none focus:shadow-[2px_2px_0_#0f172a]" type="number" min={1} value={sessions} onChange={(event) => { setSessions(Number(event.target.value))}} required/>
                         </label>
 
                         <div className="flex gap-2">
-                            <button type="submit" disabled={submitting}>
+                            <button className="rounded-xl bg-slate-900 px-4 py-2 font-bold text-white disabled:opacity-60" type="submit" disabled={submitting}>
                                 {submitting ? "saving..." : "Save"}
                             </button>
-                            <button type="button" onClick={() => setShowForm(false)}>
+                            <button className="rounded-xl px-4 py-2 font-bold hover:bg-slate-900/10" type="button" onClick={() => setShowForm(false)}>
                                 Cancel
                             </button>
                         </div>
@@ -219,7 +219,7 @@ const TaskList = ( {tasks, setTasks}: TaskListProps) => {
                 </li>
             )}
             <li>
-                <button type="button" onClick={() => setShowForm(true)} className="w-full flex justify-center items-center gap-4 bg-amber-50/30 p-2 rounded-2xl shadow-lg">
+                <button type="button" onClick={() => setShowForm(true)} className="flex w-full items-center justify-center gap-3 rounded-2xl bg-amber-50/35 p-2 font-bold text-slate-900 transition-colors hover:bg-amber-50/60">
                     <img src={PlusIcon} alt="" className="w-4 h-4"/>
                     <span>ADD NEW TASK</span>
                 </button>
